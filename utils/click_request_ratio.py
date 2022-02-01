@@ -55,5 +55,4 @@ def prepare_bar_chart(clicks_requests: pd.DataFrame, type_: str):
     requests = data[["date", "requests"]].rename(columns={"requests": "total"})
     requests["type"] = "requests"
     clicks_requests = clicks.append(requests).sort_values(by="date")
-    print(clicks_requests)
     return clicks_requests
