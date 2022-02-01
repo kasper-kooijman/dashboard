@@ -18,6 +18,7 @@ def multi_line_chart(source: pd.DataFrame, title: str, legend_sort: list):
             x="date",
             y="total",
             color=alt.Color("type", sort=legend_sort),
+            tooltip=["total"],
         )
     ).properties(title=title)
 
@@ -33,6 +34,7 @@ def multi_line_chart_rolling_mean(
             x="date",
             y="rolling_mean:Q",
             color=alt.Color("type", sort=legend_sort),
+            tooltip=["total"],
         )
     ).properties(title=title)
 
