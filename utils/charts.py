@@ -2,6 +2,10 @@ import altair as alt
 import pandas as pd
 
 
+def get_date_range(source, step_size):
+    return [source.iloc[i]["date"] for i in range(0, len(source), step_size)]
+
+
 def simple_line_chart(source: pd.DataFrame, title: str):
     return (
         alt.Chart(source)
@@ -15,7 +19,7 @@ def multi_line_chart(source: pd.DataFrame, title: str, legend_sort: list):
         alt.Chart(source)
         .mark_line()
         .encode(
-            x="date",
+            x=alt.X("date", axis=alt.Axis(values=get_date_range(source, 2))),
             y="total",
             color=alt.Color("type", sort=legend_sort),
             tooltip=["total"],
@@ -31,7 +35,7 @@ def multi_line_chart_rolling_mean(
         .mark_line()
         .transform_window(rolling_mean="mean(total)", frame=[-days, 0])
         .encode(
-            x="date",
+            x=alt.X("date", axis=alt.Axis(values=get_date_range(source, 2))),
             y="rolling_mean:Q",
             color=alt.Color("type", sort=legend_sort),
             tooltip=["total", "date"],
@@ -39,12 +43,12 @@ def multi_line_chart_rolling_mean(
     ).properties(title=title)
 
 
-def layered_bar_chart(df, title):
+def layered_bar_chart(source, title):
     return (
-        alt.Chart(df)
+        alt.Chart(source)
         .mark_bar(opacity=0.7)
         .encode(
-            x="date",
+            x=alt.X("date", axis=alt.Axis(values=get_date_range(source, 2))),
             y=alt.Y("total:Q", stack=None),
             color="type",
             order=alt.Order("type", sort="descending"),
