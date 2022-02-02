@@ -1,8 +1,9 @@
+from pydoc import cli
 import pandas as pd
 
 from pymongo import MongoClient
 
-from .data import load_clickdata, strftime
+from .data import filter_users, load_clickdata, strftime
 
 
 def get_ratio_text_search(search: MongoClient):
@@ -10,8 +11,11 @@ def get_ratio_text_search(search: MongoClient):
     document_requests = load_clickdata("document", search)
     clicks = document_requests[document_requests["sent_from"] == "text_search_result"]
 
+    clicks = filter_users(clicks)
+    requests = filter_users(requests)
+
     clicks_requests = count_clicks_and_requests(clicks, requests)
-    clicks_requests["type"] = "text_search"
+    clicks_requests.loc[:, "type"] = "text_search"
     return clicks_requests
 
 
@@ -23,19 +27,27 @@ def get_ratio_doc_search(search: MongoClient):
         )
     ]
 
+    clicks = filter_users(clicks)
+    requests = filter_users(requests)
+
     clicks_requests = count_clicks_and_requests(clicks, requests)
-    clicks_requests["type"] = "doc_search"
+    clicks_requests.loc[:, "type"] = "doc_search"
     return clicks_requests
 
 
 def count_clicks_and_requests(clicks, requests):
-    requests["date"] = strftime(requests)
-    clicks["date"] = strftime(clicks)
+
+    requests.loc[:, "date"] = strftime(requests)
+    clicks.loc[:, "date"] = strftime(clicks)
 
     clicks = count(clicks, "clicks")
     requests = count(requests, "requests")
-    clicks_requests = pd.merge(clicks, requests)
-    clicks_requests["total"] = clicks_requests["clicks"] / clicks_requests["requests"]
+
+
+    clicks_requests = pd.merge(clicks, requests, how="outer")
+    clicks_requests.loc[:, "total"] = clicks_requests["clicks"] / clicks_requests["requests"]
+
+
     return clicks_requests
 
 
@@ -51,8 +63,8 @@ def prepare_bar_chart(clicks_requests: pd.DataFrame, type_: str):
     data = clicks_requests[clicks_requests["type"] == type_]
 
     clicks = data[["date", "clicks"]].rename(columns={"clicks": "total"})
-    clicks["type"] = "clicks"
+    clicks.loc[:, "type"] = "clicks"
     requests = data[["date", "requests"]].rename(columns={"requests": "total"})
-    requests["type"] = "requests"
+    requests.loc[:, "type"] = "requests"
     clicks_requests = clicks.append(requests).sort_values(by="date")
     return clicks_requests

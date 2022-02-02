@@ -2,17 +2,18 @@ import pandas as pd
 
 from collections import Counter
 from datetime import datetime, time, timedelta
+from pymongo import MongoClient
 
 
 def combine_recurring_users(data: pd.DataFrame):
     weekly = get_recurring_users(data, 7)
-    weekly["type"] = "7 days"
+    weekly.loc[:, "type"] = "7 days"
     biweekly = get_recurring_users(data, 14)
-    biweekly["type"] = "14 days"
+    biweekly.loc[:, "type"] = "14 days"
     monthly = get_recurring_users(data, 30)
-    monthly["type"] = "30 days"
+    monthly.loc[:, "type"] = "30 days"
 
-    recurring_users = weekly.append(biweekly).append(monthly)
+    recurring_users = weekly.append(monthly).append(biweekly)
     recurring_users = recurring_users.sort_values("date")
     return recurring_users
 

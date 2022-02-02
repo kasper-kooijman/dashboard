@@ -2,7 +2,7 @@ import pandas as pd
 
 from pymongo import MongoClient
 
-from .data import load_clickdata, strftime
+from .data import filter_users, load_clickdata, strftime
 
 
 def get_users_per_day(search: MongoClient):
@@ -16,7 +16,10 @@ def get_users_per_day(search: MongoClient):
 
 def get_users_per_day_textsearch(search: MongoClient):
     data = load_clickdata("text", search)
-    data["date"] = strftime(data)
+    data.loc[:, "date"] = strftime(data)
+
+    data = filter_users(data)
+
     return _get_users_per_day(data, "text_search")
 
 
@@ -27,7 +30,10 @@ def get_users_per_day_docsearch(search: MongoClient):
             ["document_search_recommendation", "document_search_result"]
         )
     ]
-    data["date"] = strftime(data)
+    data.loc[:, "date"] = strftime(data)
+
+    data = filter_users(data)
+
     return _get_users_per_day(data, "doc_search")
 
 
@@ -42,7 +48,9 @@ def get_users_per_day_total(search: MongoClient):
         | (data["type_"] == "text")
     ]
 
-    data["date"] = strftime(data)
+    data = filter_users(data)
+
+    data.loc[:, "date"] = strftime(data)
     return _get_users_per_day(data, "total")
 
 
@@ -54,5 +62,5 @@ def _get_users_per_day(data: pd.DataFrame, type_: str):
         .reset_index()
         .rename(columns={"user_id": "total"})
     )
-    data["type"] = type_
+    data.loc[:, "type"] = type_
     return data

@@ -34,7 +34,7 @@ def multi_line_chart_rolling_mean(
             x="date",
             y="rolling_mean:Q",
             color=alt.Color("type", sort=legend_sort),
-            tooltip=["total"],
+            tooltip=["total", "date"],
         )
     ).properties(title=title)
 
@@ -45,9 +45,9 @@ def layered_bar_chart(df, title):
         .mark_bar(opacity=0.7)
         .encode(
             x="date",
-            y="total",
+            y=alt.Y("total:Q", stack=None),
             color="type",
-            order=alt.Order("type", sort="ascending"),
+            order=alt.Order("type", sort="descending"),
             tooltip=["total"],
         )
         .properties(title=title)

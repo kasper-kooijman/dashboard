@@ -1,12 +1,16 @@
 import pandas as pd
+import streamlit as st
 
 from pymongo import MongoClient
 
 
 def filter_weekends(df: pd.DataFrame):
-    df["datetime"] = pd.to_datetime(df["date"])
+    df.loc[:, "datetime"] = pd.to_datetime(df["date"])
     return df[df["datetime"].dt.weekday < 5]
 
+
+def filter_users(data: pd.DataFrame):
+    return data[~data["user_id"].isin(st.secrets["users"].values())]
 
 def strftime(data: pd.DataFrame):
     return [cd.strftime("%Y-%m-%d") for cd in data["datetime"]]
@@ -33,15 +37,16 @@ def combine_deduced_with_new_data(search, deduced_data, type_: str):
             )
             | (new_data["type_"] == "text")
         ]
+
     elif type_ == "users_per_day_text":
         new_data = load_clickdata("text", search)
 
-    new_data["datestr"] = strftime(new_data)
+    new_data.loc[:, "datestr"] = strftime(new_data)
 
     deduced_data = deduced_data.drop(["Unnamed: 0", "result_index"], axis=1).rename(
         columns={"date": "datetime"}
     )
-    deduced_data["datestr"] = pd.to_datetime(
+    deduced_data.loc[:, "datestr"] = pd.to_datetime(
         deduced_data["datetime"], errors="coerce"
     ).dt.strftime("%Y-%m-%d")
     data = deduced_data.append(new_data)
