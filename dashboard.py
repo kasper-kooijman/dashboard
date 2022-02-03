@@ -15,7 +15,7 @@ from utils.click_request_ratio import (
     prepare_bar_chart,
 )
 from utils.data import combine_deduced_with_new_data, filter_weekends
-from utils.recurring_users import combine_recurring_users
+from utils.recurring_users import combine_recurring_users, get_recurring_users
 from utils.users_per_day import get_users_per_day
 
 pd.options.mode.chained_assignment = None
@@ -29,6 +29,7 @@ col1, col2 = st.columns(2)
 # Data up until January 28, where we had to deduce clickdata ourselves.
 data_deduced = pd.read_csv("data/clickdata_deduced.csv", parse_dates=["date"])
 recurring_users = combine_deduced_with_new_data(SEARCH, data_deduced, "recurring_users")
+total_number_of_users = len(set(recurring_users["user_id"]))
 recurring_users = combine_recurring_users(recurring_users)
 
 users_per_day = pd.read_csv("data/users_per_day_docsearch_deduced.csv")
@@ -38,17 +39,22 @@ clicks_requests = pd.read_csv("data/clicks_requests_deduced.csv")
 clicks_requests = clicks_requests.append(get_ratio_doc_search(SEARCH))
 clicks_requests = clicks_requests.append(get_ratio_text_search(SEARCH))
 
-
-
 ### UNCOMMENT TO SEE TOTAL RECURRING USERS (ALSO KEYWORD SEARCHES)
-# total_recurring_users = pd.DataFrame(list(SEARCH.find({"datetime": {"$exists": True}})))
-# total_recurring_users = get_recurring_users(total_recurring_users, 30)
+total_recurring_users = pd.DataFrame(list(SEARCH.find({"datetime": {"$exists": True}})))
+total_recurring_users = get_recurring_users(total_recurring_users, 30)
+
 # total_recurring_users.loc[:, "type"] = "total 30 days"
 # recurring_users = recurring_users.append(total_recurring_users)
 
 # Sidebar:
 st.sidebar.write(f"Total number of requests: {sum(clicks_requests['requests'])}")
-st.sidebar.write(f"Total number opened results: {sum(clicks_requests['clicks'])}")
+st.sidebar.write(
+    f"Total number opened results: {int(sum(clicks_requests.fillna(0)['clicks']))}"
+)
+st.sidebar.write(f"Total number of users: {total_number_of_users}")
+st.sidebar.write(
+    f"Total number of recurring users in RO2: {total_recurring_users['total'].iloc[-1]}"
+)
 
 
 # Number of different users per day per feature
