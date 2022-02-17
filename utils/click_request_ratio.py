@@ -43,10 +43,10 @@ def count_clicks_and_requests(clicks, requests):
     clicks = count(clicks, "clicks")
     requests = count(requests, "requests")
 
-
     clicks_requests = pd.merge(clicks, requests, how="outer")
-    clicks_requests.loc[:, "total"] = clicks_requests["clicks"] / clicks_requests["requests"]
-
+    clicks_requests.loc[:, "total"] = (
+        clicks_requests["clicks"] / clicks_requests["requests"]
+    ).fillna(0)
 
     return clicks_requests
 

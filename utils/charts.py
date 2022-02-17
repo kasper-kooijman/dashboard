@@ -19,8 +19,11 @@ def multi_line_chart(source: pd.DataFrame, title: str, legend_sort: list):
         alt.Chart(source)
         .mark_line()
         .encode(
-            x=alt.X("date", axis=alt.Axis(values=get_date_range(source, 2))),
-            y="total",
+            x=alt.X(
+                "date",
+                # axis=alt.Axis(values=get_date_range(source, 2))
+            ),
+            y=alt.Y("total:Q"),
             color=alt.Color("type", sort=legend_sort),
             tooltip=["total"],
         )
@@ -35,7 +38,10 @@ def multi_line_chart_rolling_mean(
         .mark_line()
         .transform_window(rolling_mean="mean(total)", frame=[-days, 0])
         .encode(
-            x=alt.X("date", axis=alt.Axis(values=get_date_range(source, 2))),
+            x=alt.X(
+                "date",
+                # axis=alt.Axis(values=get_date_range(source, 2))
+            ),
             y="rolling_mean:Q",
             color=alt.Color("type", sort=legend_sort),
             tooltip=["total", "date"],

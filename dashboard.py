@@ -59,11 +59,11 @@ st.sidebar.write(
 
 # Number of different users per day per feature
 users_per_day = filter_weekends(users_per_day)
-chart = multi_line_chart_rolling_mean(
+chart = multi_line_chart(
     source=users_per_day,
     title="Different users per weekday per feature",
     legend_sort=["total", "doc_search", "text_search"],
-    days=5,
+    # days=5,
 )
 col1.altair_chart(chart, use_container_width=True)
 
@@ -97,10 +97,10 @@ col2.altair_chart(chart, use_container_width=True)
 
 # Ratio of number of clicks to the number of requests
 clicks_requests = filter_weekends(clicks_requests)
-chart = multi_line_chart_rolling_mean(
+chart = multi_line_chart(
     clicks_requests,
     title="Ratio of number of clicks compared to requests per weekday per feature",
     legend_sort=["text_search", "doc_search"],
-    days=5,
+    # days=5,
 )
 col1.altair_chart(chart, use_container_width=True)
