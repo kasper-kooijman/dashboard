@@ -21,10 +21,7 @@ def multi_line_chart(source: pd.DataFrame, title: str, legend_sort: list):
         alt.Chart(source)
         .mark_line()
         .encode(
-            x=alt.X(
-                "date",
-                # axis=alt.Axis(values=get_date_range(source, 5))
-            ),
+            x=alt.X("date", axis=alt.Axis(grid=False)),
             y=alt.Y("total:Q"),
             color=alt.Color("type", sort=legend_sort),
             tooltip=["total"],
@@ -56,7 +53,7 @@ def layered_bar_chart(source, title):
         alt.Chart(source)
         .mark_bar(opacity=0.7, size=20)
         .encode(
-            x=alt.X("date", axis=alt.Axis(values=get_date_range(source, 2))),
+            x=alt.X("date", axis=alt.Axis(grid=False)),
             y=alt.Y("total:Q", stack=None),
             color="type",
             order=alt.Order("type", sort="descending"),
