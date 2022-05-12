@@ -3,7 +3,9 @@ import pandas as pd
 
 
 def get_date_range(source, step_size):
-    return [source.iloc[i]["date"] for i in range(0, len(source), step_size)]
+    dates = list(dict.fromkeys(source["date"]))
+    dates = [dates[i] for i in range(0, len(dates), step_size)]
+    return dates
 
 
 def simple_line_chart(source: pd.DataFrame, title: str):
@@ -21,7 +23,7 @@ def multi_line_chart(source: pd.DataFrame, title: str, legend_sort: list):
         .encode(
             x=alt.X(
                 "date",
-                # axis=alt.Axis(values=get_date_range(source, 2))
+                # axis=alt.Axis(values=get_date_range(source, 5))
             ),
             y=alt.Y("total:Q"),
             color=alt.Color("type", sort=legend_sort),
@@ -36,7 +38,7 @@ def multi_line_chart_rolling_mean(
     return (
         alt.Chart(source)
         .mark_line()
-        .transform_window(rolling_mean="mean(total)", frame=[-days, 0])
+        .transform_window(rolling_mean="mean(total)", frame=[-2, 3])
         .encode(
             x=alt.X(
                 "date",
@@ -52,7 +54,7 @@ def multi_line_chart_rolling_mean(
 def layered_bar_chart(source, title):
     return (
         alt.Chart(source)
-        .mark_bar(opacity=0.7)
+        .mark_bar(opacity=0.7, size=20)
         .encode(
             x=alt.X("date", axis=alt.Axis(values=get_date_range(source, 2))),
             y=alt.Y("total:Q", stack=None),

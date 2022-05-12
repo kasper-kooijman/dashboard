@@ -59,12 +59,27 @@ def count(clicks: pd.DataFrame, type_: str):
     )
 
 
-def prepare_bar_chart(clicks_requests: pd.DataFrame, type_: str):
+def prepare_bar_chart(clicks_requests: pd.DataFrame, type_: str, average=False):
     data = clicks_requests[clicks_requests["type"] == type_]
 
     clicks = data[["date", "clicks"]].rename(columns={"clicks": "total"})
     clicks.loc[:, "type"] = "clicks"
     requests = data[["date", "requests"]].rename(columns={"requests": "total"})
     requests.loc[:, "type"] = "requests"
+
+    if average:
+        clicks = get_week_totals(clicks, "total")
+        requests = get_week_totals(requests, "total")
+
     clicks_requests = clicks.append(requests).sort_values(by="date")
     return clicks_requests
+
+
+def get_week_totals(df, column):
+    df["date"] = pd.to_datetime(df["date"]) - pd.to_timedelta(7, unit="d")
+    return (
+        df.groupby(["type", pd.Grouper(key="date", freq="W")])[column]
+        .sum()
+        .reset_index()
+        .sort_values("date")
+    )

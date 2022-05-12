@@ -14,7 +14,7 @@ from utils.click_request_ratio import (
     get_ratio_doc_search,
     prepare_bar_chart,
 )
-from utils.data import combine_deduced_with_new_data, filter_weekends
+from utils.data import get_user_data, filter_weekends
 from utils.recurring_users import combine_recurring_users, get_recurring_users
 from utils.users_per_day import get_users_per_day
 
@@ -27,16 +27,14 @@ st.set_page_config(layout="wide")
 col1, col2 = st.columns(2)
 
 # Data up until January 28, where we had to deduce clickdata ourselves.
-data_deduced = pd.read_csv("data/clickdata_deduced.csv", parse_dates=["date"])
-recurring_users = combine_deduced_with_new_data(SEARCH, data_deduced, "recurring_users")
+recurring_users = get_user_data(SEARCH, "recurring_users")
 total_number_of_users = len(set(recurring_users["user_id"]))
 recurring_users = combine_recurring_users(recurring_users)
 
-users_per_day = pd.read_csv("data/users_per_day_docsearch_deduced.csv")
-users_per_day = users_per_day.append(get_users_per_day(SEARCH))
+users_per_day = get_users_per_day(SEARCH)
 
-clicks_requests = pd.read_csv("data/clicks_requests_deduced.csv")
-clicks_requests = clicks_requests.append(get_ratio_doc_search(SEARCH))
+# clicks_requests = pd.read_csv("data/clicks_requests_deduced.csv")
+clicks_requests = get_ratio_doc_search(SEARCH)
 clicks_requests = clicks_requests.append(get_ratio_text_search(SEARCH))
 
 ### UNCOMMENT TO SEE TOTAL RECURRING USERS (ALSO KEYWORD SEARCHES)
@@ -58,12 +56,11 @@ st.sidebar.write(
 
 
 # Number of different users per day per feature
-users_per_day = filter_weekends(users_per_day)
+# users_per_day = filter_weekends(users_per_day)
 chart = multi_line_chart(
     source=users_per_day,
-    title="Different users per weekday per feature",
+    title="Different users per week per feature",
     legend_sort=["total", "doc_search", "text_search"],
-    # days=5,
 )
 col1.altair_chart(chart, use_container_width=True)
 
@@ -77,20 +74,24 @@ col2.altair_chart(chart, use_container_width=True)
 
 
 # Number of clicks and requests doc search
-clicks_requests_docsearch = prepare_bar_chart(clicks_requests, "doc_search")
-clicks_requests_docsearch = filter_weekends(clicks_requests_docsearch)
+clicks_requests_docsearch = prepare_bar_chart(
+    clicks_requests, "doc_search", average=True
+)
+# clicks_requests_docsearch = filter_weekends(clicks_requests_docsearch)
 chart = layered_bar_chart(
     clicks_requests_docsearch,
-    title="Number of clicks and requests per day for doc search",
+    title="Number of clicks and requests per week for doc search",
 )
 col1.altair_chart(chart, use_container_width=True)
 
 
-clicks_requests_textsearch = prepare_bar_chart(clicks_requests, "text_search")
-clicks_requests_textsearch = filter_weekends(clicks_requests_textsearch)
+clicks_requests_textsearch = prepare_bar_chart(
+    clicks_requests, "text_search", average=True
+)
+# clicks_requests_textsearch = filter_weekends(clicks_requests_textsearch)
 chart = layered_bar_chart(
     clicks_requests_textsearch,
-    title="Number of clicks and requests per day for text search",
+    title="Number of clicks and requests per week for text search",
 )
 col2.altair_chart(chart, use_container_width=True)
 

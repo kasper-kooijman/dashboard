@@ -11,7 +11,23 @@ def get_users_per_day(search: MongoClient):
     users_total = get_users_per_day_total(search)
 
     users_per_day = users_text.append(users_doc).append(users_total)
+
+    users_text = get_week_totals(users_text, "total")
+    users_doc = get_week_totals(users_doc, "total")
+    users_total = get_week_totals(users_total, "total")
+
+    users_per_day = users_text.append(users_doc).append(users_total)
     return users_per_day.sort_values("date")
+
+
+def get_week_totals(df, column):
+    df["date"] = pd.to_datetime(df["date"]) - pd.to_timedelta(7, unit="d")
+    return (
+        df.groupby(["type", pd.Grouper(key="date", freq="W")])[column]
+        .sum()
+        .reset_index()
+        .sort_values("date")
+    )
 
 
 def get_users_per_day_textsearch(search: MongoClient):
